@@ -1,7 +1,13 @@
-﻿bool isRunning = true;
-string[] matrixCodes = { "1C", "E9", "BD", "55" };
-string[] codeSequence = FillCodeSequence();
-int selectedCodeIndex = 0;
+﻿using HackingMicrogame.Models;
+
+bool isRunning = true;
+int currentRowSelectedCodeIndex = 0;
+int currentColumnSelectedCodeIndex = 0;
+int selectedRowIndex = 0;
+int selectedColumnIndex = 0;
+bool isColumnModeOn = false;
+
+BreachProtocol breachProtocol = new ();
 
 while (isRunning)
 {
@@ -11,10 +17,35 @@ while (isRunning)
     switch (inputKey)
     {
         case ConsoleKey.RightArrow:
-            if (selectedCodeIndex < codeSequence.Length - 1) selectedCodeIndex++;
+            if (!isColumnModeOn && currentRowSelectedCodeIndex < 5)
+            {
+                currentRowSelectedCodeIndex++;
+                selectedColumnIndex++;
+            }
         break; 
         case ConsoleKey.LeftArrow:
-            if (selectedCodeIndex > 0) selectedCodeIndex--;
+            if (!isColumnModeOn && currentRowSelectedCodeIndex > 0)
+            {
+                currentRowSelectedCodeIndex--;
+                selectedColumnIndex--;
+            }
+        break;
+        case ConsoleKey.DownArrow:
+            if (isColumnModeOn && currentColumnSelectedCodeIndex < 5)
+            {
+                currentColumnSelectedCodeIndex++;
+                selectedRowIndex++;
+            }
+        break;
+        case ConsoleKey.UpArrow:
+            if (isColumnModeOn && currentColumnSelectedCodeIndex > 0)
+            {
+                currentColumnSelectedCodeIndex--;
+                selectedRowIndex--;
+            }
+        break;
+        case ConsoleKey.Enter:
+            isColumnModeOn = !isColumnModeOn;
         break;
         default:
             isRunning = false;
@@ -25,40 +56,86 @@ while (isRunning)
 void Update()
 {
     Console.Clear();
-    PrintCodeSequence(codeSequence);
+    RenderCodeMatrix(breachProtocol.CodeMatrix);
+
+    Console.BackgroundColor = ConsoleColor.Black;
+    Console.ForegroundColor = ConsoleColor.Gray;
+
+    Console.WriteLine($"\nCurrent row selected code index: {currentRowSelectedCodeIndex}");
+    Console.WriteLine($"Current column selected code index: {currentColumnSelectedCodeIndex}");
+    Console.WriteLine($"Is columns mode on: {isColumnModeOn}");
 
     Console.WriteLine("\nPress any key to exit..");
 }
 
-void PrintCodeSequence (string[] codeSequence)
+void RenderCodeMatrix (string[,] codeMatrix)
 {
-    for (int i = 0; i < codeSequence.Length; i++)
+    if (isColumnModeOn)
     {
-        string? code = codeSequence[i];
-        if (i == selectedCodeIndex)
+        for (int i = 0; i < 6; i++)
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write($"{code} ");
-            Console.ForegroundColor = ConsoleColor.Gray;
+            for (int j = 0; j < 6; j++)
+            {
+                if (j == selectedColumnIndex)
+                {
+                    Console.BackgroundColor = ConsoleColor.Gray;
+                    Console.ForegroundColor = ConsoleColor.Black;
+                }
+                else
+                {
+                    Console.BackgroundColor = ConsoleColor.Black;
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                }
+
+                string code = codeMatrix[i, j];
+
+                if (j == selectedColumnIndex && i == currentColumnSelectedCodeIndex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write($"{code} ");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                }
+                else
+                {
+                    Console.Write($"{code} ");
+                }
+            }
+            Console.WriteLine();
         }
-        else
+    }
+    else
+    {
+        for (int i = 0; i < 6; i++)
         {
-            Console.Write($"{code} ");
+            if (i == selectedRowIndex)
+            {
+                Console.BackgroundColor = ConsoleColor.Gray;
+                Console.ForegroundColor = ConsoleColor.Black;
+            }
+            else
+            {
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }
+
+            for (int j = 0; j < 6; j++)
+            {
+                string code = codeMatrix[i, j];
+
+                if (i == selectedRowIndex && j == currentRowSelectedCodeIndex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write($"{code} ");
+                    Console.ForegroundColor = ConsoleColor.Black;
+                }
+                else
+                {
+                    Console.Write($"{code} ");
+                }
+            }
+            Console.WriteLine();
         }
     }
 
     Console.WriteLine();
-}
-
-string[] FillCodeSequence()
-{
-    string[] result = new string[5];
-    for (int i = 0; i < result.Length; i++)
-    {
-        int randomIndex = new Random().Next(0, matrixCodes.Length);
-        string randomCode = matrixCodes[randomIndex];
-        result[i] = randomCode;
-    }
-
-    return result;
 }
