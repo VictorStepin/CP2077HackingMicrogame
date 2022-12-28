@@ -45,6 +45,7 @@ while (isRunning)
             }
         break;
         case ConsoleKey.Enter:
+            breachProtocol.AddCodeToBuffer(currentColumnSelectedCodeIndex, currentRowSelectedCodeIndex);
             isColumnModeOn = !isColumnModeOn;
         break;
         default:
@@ -56,10 +57,14 @@ while (isRunning)
 void Update()
 {
     Console.Clear();
+    Console.WriteLine("CODE MATRIX:");
     RenderCodeMatrix(breachProtocol.CodeMatrix);
 
     Console.BackgroundColor = ConsoleColor.Black;
     Console.ForegroundColor = ConsoleColor.Gray;
+
+    Console.WriteLine("\nBUFFER:");
+    RenderBuffer();
 
     Console.WriteLine($"\nCurrent row selected code index: {currentRowSelectedCodeIndex}");
     Console.WriteLine($"Current column selected code index: {currentColumnSelectedCodeIndex}");
@@ -136,6 +141,13 @@ void RenderCodeMatrix (string[,] codeMatrix)
             Console.WriteLine();
         }
     }
+}
 
+void RenderBuffer()
+{
+    foreach (var code in breachProtocol.Buffer)
+    {
+        Console.Write($"[{code}] ");
+    }
     Console.WriteLine();
 }
